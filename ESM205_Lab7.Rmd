@@ -15,6 +15,7 @@ library(GGally)
 library(broom)
 library(kableExtra)
 library(modelsummary)
+library(stargazer)
 ```
 
 gg pairs allows you to create a pairs plot which shows bi variant relationships
@@ -75,6 +76,7 @@ Clean up data!
 
 Use broom::tidy to get coefficient summary in a data frame. 
 Use broom::glance to get the model summary in a data frame. 
+These are not necessary, but makes access easier! 
 
 ```{r}
 penguin_lm_tidy <- tidy(penguin_lm)
@@ -86,6 +88,88 @@ penguin_lm_tidy
 Try using in-line code to refer to the bill depth coefficient 
 
 `r round(penguin_lm_tidy$estimate[3])`
+
+## Broom glance, output will be a data frame but it contains bigger model outputs
+
+```{r}
+penguin_lm_glance <- glance(penguin_lm)
+
+penguin_lm_glance
+```
+
+## Try another model 
+
+We have thought really hard, done a lit review, consulted w/ experts, deeply explored our data & decided that the 3 most critical variables to include in this model are; 
+
+- flipper length
+- species
+- sex 
+
+
+Task: Create a multiple linear regression model using those 3 predictor variables, then take a look at the model outputs & interpret the coefficients with a neighbor.
+
+```{r}
+penguin_lm_2 <- lm(body_mass_g ~ flipper_length_mm + species + sex, data = penguins)
+
+penguin_lm_2
+```
+
+Adelle penguins are the reference species. Female is the reference level for sex. 
+
+Mass(g) = -365.82 + 20.02(flipper(mm)) - 80.73(chinstrap) + 836.31(Gentoo) + 530.38(Male)
+
+Interpreting Coefficients relevant to a reference level: 
+836.26(Gentoo) = if everything else remained constant, then on avg we expect a Gentoo penguin to weight 836.26 g more than an Adelie penguin. 
+
+(-87.63)Chinstrap: Chinstrap penguins would be smaller than Adelie's by -87.63.
+
+Males = If everything else is the same, we expect a male penguin to weigh on average 530g more than a female penguin. 
+
+Predicting mass of chinstrap penguin that was female with flipper length of 180mm: 
+
+Equation: 180 + 1(chin) + 0(gentoo) + 0(male)
+
+Estimate the body mass of a male adelie penguin with 200ml flippers
+
+eq = 200ml + 1(male) + 0(chinstrap) + 0(gentoo)
+
+```{r}
+augment(penguin_lm_2)
+```
+
+# Use plot() to look at model diagnostics
+
+```{r}
+plot(penguin_lm_2)
+```
+
+Plot three you want to see constant spread across the duration of the predicted model. 
+
+Assumption of linear regression, independence of residuals. Errors associated with one observation impact errors with another observation. 
+
+- Conceptual understanding and expertise allows me to responsibly determine that penguin species, sex and flipper length are reasonable predictor variable. Make sure to think hard about variables and variable combinations. 
+
+- Diagnostic plots all check out for normality of residuals, homoscedasticity, and no worrisome outliers (<< last one is not an assumption)
+
+What if I wanted to look at a model that used flipper_length, species, sex, and bill length. It would still be an appropriate model! 
+
+Model outputs for papers won't be for a single model. It's usual a combo of predictor variables. 
+
+## Make Output Tables
+Using model summary:
+```{r}
+modelsummary(penguin_lm_2)
+```
+
+Using stargazer: create html tables with other output formulas 
+
+```{r, results = "asis"}
+stargazer(penguin_lm_2, type = "html") # Check lab report
+```
+
+
+
+
 
 
 
